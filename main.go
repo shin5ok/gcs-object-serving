@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -9,6 +10,8 @@ import (
 	"cloud.google.com/go/storage"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
+	"golang.org/x/net/http2"
+	"golang.org/x/net/http2/h2c"
 )
 
 var bucketName string = os.Getenv("BUCKET_NAME")
@@ -70,5 +73,14 @@ func main() {
 		port = "8080"
 	}
 
-	http.ListenAndServe(":"+port, r)
+	// HTTP/2 config
+	h2Handler := h2c.NewHandler(r, &http2.Server{})
+	server := &http.Server{
+		Addr:    ":" + port,
+		Handler: h2Handler,
+	}
+	if err := server.ListenAndServe(); err != nil {
+		fmt.Printf("Cannot start server: %s\n", err)
+	}
+
 }
