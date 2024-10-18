@@ -22,6 +22,7 @@ deploy: check
 	--service-account=$(NAME)@$(PROJECT_ID).iam.gserviceaccount.com \
 	--cpu-boost \
 	--no-default-url \
+	--use-http2 \
 	--allow-unauthenticated
 
 .PHONY: sa
