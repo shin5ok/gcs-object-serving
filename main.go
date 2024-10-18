@@ -18,7 +18,7 @@ func main() {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 
-	r.Get("/objects/*", func(w http.ResponseWriter, r *http.Request) {
+	r.Get("/*", func(w http.ResponseWriter, r *http.Request) {
 		objectName := chi.URLParam(r, "*")
 
 		// Create a new GCS client.

@@ -1,31 +1,34 @@
 
+NAME := gcs-object-serving
 BUCKET_NAME := $(BUCKET_NAME)
 PROJECT_ID := $(PROJECT_ID)
 
 .PHONY: check
 check:
 	@echo "Checking environmental values..."
+	# woule implement in the future
 
 .PHONY: deploy
 deploy: check
-	@echo "Building Cloud Run service of gcs-object-serving"
+	@echo "Building Cloud Run service of $(NAME)"
 
-	gcloud run deploy gcs-object-serving \
+	gcloud beta run deploy $(NAME) \
 	--source=. \
 	--region=asia-northeast1 \
-	--cpu=0.5 \
-	--memory=512M \
+	--cpu=1 \
+	--memory=1G \
 	--ingress=internal-and-cloud-load-balancing \
 	--set-env-vars=BUCKET_NAME=$(BUCKET_NAME) \
-	--min-instances=1 \
-	--service-account=gcs-object-serving@$(PROJECT_ID).iam.gserviceaccount.com \
+	--service-account=$(NAME)@$(PROJECT_ID).iam.gserviceaccount.com \
+	--cpu-boost \
+	--no-default-url \
 	--allow-unauthenticated
 
 .PHONY: sa
 sa: check
 	@echo "Make service accounts"
 
-	gcloud iam service-accounts create gcs-object-serving || true
+	gcloud iam service-accounts create $(NAME) || true
 	gcloud iam service-accounts create cloudbuild || true
 
 
@@ -35,7 +38,7 @@ iam: check
 	@echo "Grant some authorizations to the service account for Cloud Run service"
 
 	gcloud projects add-iam-policy-binding $(PROJECT_ID) \
-	--member=serviceAccount:gcs-object-serving@$(PROJECT_ID).iam.gserviceaccount.com \
+	--member=serviceAccount:$(NAME)@$(PROJECT_ID).iam.gserviceaccount.com \
 	--role=roles/storage.objectUser
 
 	@echo "Grant some authorizations to the service account for Cloud Build"
